@@ -1,0 +1,9 @@
+[package]
+name = "qupla_rust"
+version = "0.1.0"
+authors = ["Sourceplayer <raul@bambamlabs.com>"]
+edition = "2018"
+
+[dependencies]
+hex = "0.3.2"
+
