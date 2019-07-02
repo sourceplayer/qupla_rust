@@ -1,5 +1,6 @@
 mod helper;
 use helper::tritvector::TritVector;
+use helper::tritconverter::TritConverter;
 
 
 fn main() {
@@ -13,4 +14,6 @@ fn main() {
     println!("Tritvector3: {:?}", &trit_vector3);
     println!("Tritvector2: {:?}", &trit_vector2);
 
+    let result = TritConverter::from_decimal(String::from("-12378945"));
+    println!("{}", result);
 }

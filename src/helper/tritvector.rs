@@ -1,8 +1,5 @@
-use super::tritvectorbuffer::TritVectorBuffer; 
-
-const ZEROES: TritVectorBuffer = TritVectorBuffer::from(0);
-const NULLS: TritVectorBuffer = TritVectorBuffer::from(0);
-const SINGLE_TRITS: TritVectorBuffer = TritVectorBuffer::from(2);
+use super::tritvectorbuffer::TritVectorBuffer;
+use super::tritconverter::*; 
 
 #[derive(Debug)]
 pub struct TritVector {
@@ -63,17 +60,30 @@ impl From<String> for TritVector {
 
 impl TritVector {
 
+    pub fn ZEROS() -> TritVectorBuffer {
+        TritVectorBuffer::from(0)
+    }
+
+    pub fn NULLS() -> TritVectorBuffer {
+        TritVectorBuffer::from(0)
+    }
+
+    pub fn SINGLE_TRITS() -> TritVectorBuffer
+    {
+        TritVectorBuffer::from(2)
+    }
+
     pub fn new(size: usize, trit: char) -> Self {
         let mut trit_vector = TritVector::from(size);
         match trit {
-            '@' => trit_vector.vector = NULLS,
+            '@' => trit_vector.vector = TritVector::NULLS(),
             '0' => { 
-                        trit_vector.vector = ZEROES;
+                        trit_vector.vector = TritVector::ZEROS();
                         trit_vector.value_trits = size;
                     }
             '-' | '1' => {
                         if size == 1 {
-                            trit_vector.vector = SINGLE_TRITS;
+                            trit_vector.vector = TritVector::SINGLE_TRITS();
                             trit_vector.offset = if trit == '1' {1} else {0};
                             trit_vector.value_trits = 1;
                         }
@@ -123,17 +133,17 @@ impl TritVector {
             None => {return lhs.unwrap()}
         }
 
-        let lhsu = lhs.unwrap();
-        let rhsu = rhs.unwrap();
+        let mut lhsu = lhs.unwrap();
+        let mut rhsu = rhs.unwrap();
 
         // Can we directly concatenete in lhs vector?
-        if (lhsu.offset + lhsu.size != lhsu.vector.used) || (lhsu.vector == NULLS) || (lhsu.vector == ZEROES) {
+        if (&lhsu.offset + &lhsu.size != lhsu.vector.used) || (&lhsu.vector == &TritVector::NULLS()) || (&lhsu.vector == &TritVector::ZEROS()) {
             // Combine two null vectors?
             if lhsu.is_null() && rhsu.is_null() {
                 return TritVector::new(lhsu.size() + rhsu.size(), '@')
             }
 
-            if lhsu.vector == ZEROES && rhsu.vector == ZEROES {
+            if &lhsu.vector == &TritVector::ZEROS() && &rhsu.vector == &TritVector::ZEROS() {
                 return TritVector::new(lhsu.size() + rhsu.size(), '0')
             }            
             
@@ -141,10 +151,13 @@ impl TritVector {
         }
 
         // grow vector if necessary
-        lhsu.vector.grow(lhsu.vector.used + rhsu.size());
 
+        let new_length = &lhsu.vector.used + &rhsu.size();
+        lhsu.vector = lhsu.vector.grow(new_length);
+    
         // concatenate into lhs vector
-        lhsu.copy(rhsu, lhsu.vector.used);
+        let copy_to = lhsu.vector.used;
+        lhsu.copy(&rhsu, &copy_to);
         lhsu.vector.used += rhsu.size();
         
         // point to the new combined vector
@@ -164,7 +177,7 @@ impl TritVector {
     }
 
     pub fn is_zero(&self) -> bool {
-        if self.vector == ZEROES {
+        if self.vector == TritVector::ZEROS() {
             return true
         }
 
@@ -181,7 +194,7 @@ impl TritVector {
     }
 
     pub fn to_string(&self) -> String {
-        let mut trit_string = String::from(self.name);
+        let mut trit_string = self.name.clone();
 
         trit_string.push('(');
         for i in 0..self.vector.buffer.len() {
@@ -220,24 +233,27 @@ impl TritVector {
         match trits[0] {
             '-' => value -= 1,
             '1' => value += 1,
+            _ => {}
         }
         match trits[1] {
             '-' => value -= 3,
             '1' => value += 3,
+            _ => {}
         }
         match trits[2] {
             '-' => value -= 9,
             '1' => value += 9,
+            _ => {}
         }
 
-        TritConverter::TRYTES::char_at(value);
+        TRYTES.chars().nth(value).unwrap()
     }
 
     pub fn size(&self) -> usize {
         self.size
     }
 
-    pub fn copy(&self, src: TritVector, to: usize)
+    pub fn copy(&mut self, src: &TritVector, to: &usize)
     {
         for i in 0..src.size() {
             self.vector.buffer[to + i] = src.trit(i);
@@ -249,10 +265,10 @@ impl TritVector {
 
         let mut offset: usize = 0;
         for i in 0..trytes.len() {
-            let index = TritConverter::TRYTES.indexOf(trytes.charAt(i));
-            let trits: String = TritConverter::TRYTE_TRITS[index];
+            let index = TRYTES.chars().position(|c| c == trytes.chars().nth(i).unwrap()).unwrap();
+            let trits: String = String::from(TRYTE_TRITS[index]);
             for j in 0..3 {
-                result.vector.buffer[offset + j] = trits.charAt(j);
+                result.vector.buffer[offset + j] = trits.chars().nth(j).unwrap();
             }
             offset += 3;
         }
@@ -265,7 +281,7 @@ impl TritVector {
             eprintln!("Slice out of range ({}): {}:{}", self.size(), start, length);
         }
 
-        let result: TritVector = TritVector::from(self);
+        let mut result: TritVector = TritVector::from(self);
 
         if start == 0 && length == self.size()
         {
@@ -307,13 +323,13 @@ impl TritVector {
         }
 
         let remain: usize = self.size() - start;
-        let mut paddedZeroes: TritVector = TritVector::new(length - remain, '0');
+        let paddedZeroes: TritVector = TritVector::new(length - remain, '0');
         TritVector::concat(Some(self.slice(start, length)), Some(paddedZeroes))
     }
 
-    pub fn to_decimal(&self) -> String {
-        String::from(TritConverter::to_decimal(self.trits()).as_str())
-    }
+    // pub fn to_decimal(&self) -> String {
+    //     String::from(TritConverter::to_decimal(self.trits()).as_str())
+    // }
 
 
 
