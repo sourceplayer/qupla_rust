@@ -1,3 +1,5 @@
+extern crate num_bigint;
+
 mod helper;
 use helper::tritvector::TritVector;
 use helper::tritconverter::TritConverter;
@@ -11,9 +13,13 @@ fn main() {
 
     let trit_vector3 = TritVector::from(&trit_vector2);
 
-    println!("Tritvector3: {:?}", &trit_vector3);
-    println!("Tritvector2: {:?}", &trit_vector2);
+    // println!("Tritvector3: {:?}", &trit_vector3);
+    // println!("Tritvector2: {:?}", &trit_vector2);
 
-    let result = TritConverter::from_decimal(String::from("-12378945"));
+    let result = TritConverter::from_decimal(String::from("30"));
     println!("{}", result);
+
+    // TritConverter::get_power(10);
+
+    println!("{}", TritConverter::from_float(String::from("30.5123"), 4, 4));
 }

@@ -24,21 +24,29 @@ impl From<usize> for TritVectorBuffer {
 
 impl TritVectorBuffer {
 
-    pub fn grow(mut self, needed: usize) -> TritVectorBuffer {
+    pub fn grow(&mut self, needed: usize) {
         let length =  &self.buffer.len();
         if length < &needed {
             let mut new_size = length * 3;
-            while &new_size < &needed
+            while new_size < needed
             {
                 new_size *= 3;
             }
 
-            let mut new_buffer: Vec<char>;
-            new_buffer = self.buffer.clone();
-            self.buffer = new_buffer;
+            for i in 0..new_size - length
+            {
+                self.buffer.push('0');
+            }
         }
-        self
     }
+
+    // pub fn copy(vec1: Vec<char>, vec2: Vec<char>) -> Vec<char>
+    // {
+    //     for item in vec1 {
+
+    //     }
+
+    // }
 
     pub fn clone(&self) -> TritVectorBuffer
     {

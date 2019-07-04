@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 hex = "0.3.2"
-
+num-bigint = "0.2"

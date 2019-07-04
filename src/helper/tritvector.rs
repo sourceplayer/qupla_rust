@@ -93,7 +93,7 @@ impl TritVector {
                 }
             }
 
-        trit_vector.vector = trit_vector.vector.grow(size);
+        trit_vector.vector.grow(size);
 
         while trit_vector.vector.used < trit_vector.vector.buffer.len() as usize {
             trit_vector.vector.buffer[trit_vector.vector.used] = trit;
@@ -153,7 +153,7 @@ impl TritVector {
         // grow vector if necessary
 
         let new_length = &lhsu.vector.used + &rhsu.size();
-        lhsu.vector = lhsu.vector.grow(new_length);
+        lhsu.vector.grow(new_length);
     
         // concatenate into lhs vector
         let copy_to = lhsu.vector.used;
@@ -210,12 +210,9 @@ impl TritVector {
     pub fn trits(&self) -> String {
         let mut trit_string = String::new();
 
-        for i in 0..self.vector.buffer.len() {
+        for i in self.offset..self.offset + self.size() {
             trit_string.push(self.vector.buffer[i]);
         }
-        trit_string.push_str(format!(" {}", self.offset).as_str());
-        trit_string.push_str(format!(" {}", self.size).as_str());
-
         trit_string
     }
 
@@ -323,16 +320,39 @@ impl TritVector {
         }
 
         let remain: usize = self.size() - start;
-        let paddedZeroes: TritVector = TritVector::new(length - remain, '0');
-        TritVector::concat(Some(self.slice(start, length)), Some(paddedZeroes))
+        let padded_zeros: TritVector = TritVector::new(length - remain, '0');
+        TritVector::concat(Some(self.slice(start, length)), Some(padded_zeros))
     }
 
     // pub fn to_decimal(&self) -> String {
     //     String::from(TritConverter::to_decimal(self.trits()).as_str())
     // }
 
+    pub fn to_trytes(&self) -> String {
+        let mut buffer: Vec<char> = vec!['0'; (self.size() + 2) / 3];
+        let mut start: usize = self.offset;
+        let mut trits: Vec<char> = vec!['0'; 3];
+        let trytes: usize = self.size() / 3;
+        for i in 0..trytes {
+            for j in 0..3 {
+                trits[j] = self.vector.buffer[start + j];
+            }
+            buffer[i] = TritVector::tryte(trits.clone());
+            start += 3;
+        }
 
-
+        if buffer.len() > trytes {
+            // do remaining 1 or 2 trits
+            trits[1] = '0';
+            trits[2] = '0';
+            let end: usize  = trytes * 3;
+            for i in end..self.size() {
+                trits[i - end] = self.vector.buffer[self.offset + i];
+            }
+            buffer[trytes] = TritVector::tryte(trits);
+        }
+        buffer.into_iter().collect()
+    }
 }
 
 impl PartialEq for TritVector {
