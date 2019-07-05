@@ -1,4 +1,4 @@
-use super::tritvector::TritVector;
+use crate::helper::tritvector::TritVector;
 use num_bigint::{BigInt, Sign};
 
 pub const BOOL_FALSE: char = '-';

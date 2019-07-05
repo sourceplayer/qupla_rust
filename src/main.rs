@@ -1,8 +1,9 @@
 extern crate num_bigint;
-
 mod helper;
-use helper::tritvector::TritVector;
-use helper::tritconverter::TritConverter;
+mod dispatcher;
+
+use crate::helper::tritvector::TritVector;
+use crate::helper::tritconverter::TritConverter;
 
 
 fn main() {

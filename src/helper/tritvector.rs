@@ -1,5 +1,5 @@
-use super::tritvectorbuffer::TritVectorBuffer;
-use super::tritconverter::*; 
+use crate::helper::tritvectorbuffer::TritVectorBuffer;
+use crate::helper::tritconverter::*; 
 
 #[derive(Debug)]
 pub struct TritVector {
