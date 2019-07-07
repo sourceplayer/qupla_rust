@@ -2,6 +2,8 @@ use std::fmt::*;
 
 const INITIAL_SIZE: usize = 27;
 
+#[allow(unused_variables)]
+#[derive(Clone)]
 pub struct TritVectorBuffer {
     pub buffer: Vec<char>,
     pub used: usize

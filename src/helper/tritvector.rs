@@ -1,7 +1,7 @@
 use crate::helper::tritvectorbuffer::TritVectorBuffer;
 use crate::helper::tritconverter::*; 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TritVector {
     pub name: String,
     offset: usize,
@@ -60,15 +60,15 @@ impl From<String> for TritVector {
 
 impl TritVector {
 
-    pub fn ZEROS() -> TritVectorBuffer {
+    pub fn zeros() -> TritVectorBuffer {
         TritVectorBuffer::from(0)
     }
 
-    pub fn NULLS() -> TritVectorBuffer {
+    pub fn nulls() -> TritVectorBuffer {
         TritVectorBuffer::from(0)
     }
 
-    pub fn SINGLE_TRITS() -> TritVectorBuffer
+    pub fn signle_trits() -> TritVectorBuffer
     {
         TritVectorBuffer::from(2)
     }
@@ -76,14 +76,14 @@ impl TritVector {
     pub fn new(size: usize, trit: char) -> Self {
         let mut trit_vector = TritVector::from(size);
         match trit {
-            '@' => trit_vector.vector = TritVector::NULLS(),
+            '@' => trit_vector.vector = TritVector::nulls(),
             '0' => { 
-                        trit_vector.vector = TritVector::ZEROS();
+                        trit_vector.vector = TritVector::zeros();
                         trit_vector.value_trits = size;
                     }
             '-' | '1' => {
                         if size == 1 {
-                            trit_vector.vector = TritVector::SINGLE_TRITS();
+                            trit_vector.vector = TritVector::signle_trits();
                             trit_vector.offset = if trit == '1' {1} else {0};
                             trit_vector.value_trits = 1;
                         }
@@ -137,13 +137,13 @@ impl TritVector {
         let mut rhsu = rhs.unwrap();
 
         // Can we directly concatenete in lhs vector?
-        if (&lhsu.offset + &lhsu.size != lhsu.vector.used) || (&lhsu.vector == &TritVector::NULLS()) || (&lhsu.vector == &TritVector::ZEROS()) {
+        if (&lhsu.offset + &lhsu.size != lhsu.vector.used) || (&lhsu.vector == &TritVector::nulls()) || (&lhsu.vector == &TritVector::zeros()) {
             // Combine two null vectors?
             if lhsu.is_null() && rhsu.is_null() {
                 return TritVector::new(lhsu.size() + rhsu.size(), '@')
             }
 
-            if &lhsu.vector == &TritVector::ZEROS() && &rhsu.vector == &TritVector::ZEROS() {
+            if &lhsu.vector == &TritVector::zeros() && &rhsu.vector == &TritVector::zeros() {
                 return TritVector::new(lhsu.size() + rhsu.size(), '0')
             }            
             
@@ -177,7 +177,7 @@ impl TritVector {
     }
 
     pub fn is_zero(&self) -> bool {
-        if self.vector == TritVector::ZEROS() {
+        if self.vector == TritVector::zeros() {
             return true
         }
 
@@ -217,7 +217,7 @@ impl TritVector {
     }
 
     pub fn trit(&self, index: usize) -> char {
-        if index < 0 || index >= self.size {
+        if index >= self.size {
             eprintln!("Index out of range");
         }
         self.vector.buffer[index]
@@ -274,7 +274,7 @@ impl TritVector {
 
     pub fn slice(&self, start: usize, length: usize) -> TritVector
     {
-        if start < 0 || length < 0 || start + length > self.size() {
+        if start + length > self.size() {
             eprintln!("Slice out of range ({}): {}:{}", self.size(), start, length);
         }
 

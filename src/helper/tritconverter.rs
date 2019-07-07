@@ -311,7 +311,7 @@ impl TritConverter {
 
         for i in 0..trits.len() {
             let trit = trits.chars().nth(i).unwrap();
-            if (trit != '0') {
+            if trit != '0' {
                 result += if trit == '-' { -power } else { power };
             }
             power *= 3;

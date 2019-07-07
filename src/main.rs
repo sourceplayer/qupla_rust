@@ -1,12 +1,18 @@
+#![allow(unused_variables, dead_code, unused_mut, unused_imports)] 
+
 extern crate num_bigint;
 mod helper;
 mod dispatcher;
+mod model;
 
 use crate::helper::tritvector::TritVector;
 use crate::helper::tritconverter::TritConverter;
-
+use crate::model::Model;
 
 fn main() {
+    let model = Model::new();
+    println!("{:?}", model.current_quant); 
+
     let trit_vector = TritVector::from(10);
     println!("{:?}", &trit_vector); 
 
