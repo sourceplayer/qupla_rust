@@ -2,31 +2,30 @@ use crate::helper::tritvector::{ TritVector };
 use crate::dispatcher::effect::Effect;
 use crate::dispatcher::environment::Environment;
 use crate::dispatcher::event::Event;
+use crate::dispatcher::supervisor::Supervisor;
 
-#[allow(unused_variables)] 
+#[derive(Clone)]
 pub struct Entity<'a> {
+    supervisor: &'a mut Supervisor<'a>,
     effects: Vec<Effect<'a>>,
-    events: Vec<Event>,
     id: String,
     invoked: usize,
     limit: usize
 }
 
-impl<'a> From<usize> for Entity<'a> {
-    fn from(limit: usize) -> Entity<'a> {
+impl<'a> Entity<'a> {
+    pub fn new(supervisor: &'a mut Supervisor<'a>, limit: usize) -> Entity {
         Entity {
+            supervisor,
             limit,
             id: String::new(),
             invoked: 0,
-            effects: vec![],
-            events: vec![]
+            effects: vec![]
         }
     }
-}
 
-impl<'a> Entity<'a> {
     pub fn start(&self, entity_name: String) {
-        let entity = Entity::from(0);
+        // let entity = Entity::new(0);
     }
 
     pub fn affect(&mut self, env: &'a mut Environment<'a>, delay: usize) {
@@ -34,11 +33,11 @@ impl<'a> Entity<'a> {
         self.effects.push(effect);
     }
 
-    pub fn join(self, env: &mut Environment<'a>) {
+    pub fn join(&'a mut self, env: &'a mut Environment<'a>) {
         env.join(self);
     }
 
-    pub fn process_effect(&mut self, effect: TritVector) {
+    pub fn process_effect(&'a mut self, effect: TritVector) {
 
         // Have entity process the effect
         let result: Option<TritVector> = self.on_effect(Some(effect));
@@ -51,7 +50,7 @@ impl<'a> Entity<'a> {
         self.queue_effect_events(result.unwrap());
     }
 
-    pub fn queue_effect_events(&mut self, value: TritVector) {
+    pub fn queue_effect_events(&'a mut self, value: TritVector) {
         // All effects for this entity have been predetermined already
         // from the metadata, so we just need to queue them as events
         for effect in self.effects.iter_mut() {
@@ -59,15 +58,15 @@ impl<'a> Entity<'a> {
         }
     }
 
-    pub fn queue_event(& mut self, value: TritVector, delay: usize) {
+    pub fn queue_event(&'a mut self, value: TritVector, delay: usize) {
         // Queue an event for this entity with proper delay
-        let mut event: Event = Event::new(value, delay);
-        self.events.push(event.clone());
         if delay == 0 && self.invoked < self.limit {
             // Can do another invocation during the current quant
             self.invoked += 1;
+            let mut event: Event = Event::new(self, value, delay);
         } else {
             // Invocation limit exceeded, schedule for next quant
+            let mut event: Event = Event::new(self, value, delay);
             event.quant += 1;
         }
     }
@@ -76,7 +75,7 @@ impl<'a> Entity<'a> {
         self.limit = 0;
     }
 
-    pub fn stop() {
+    pub fn stop(&mut self) {
 
     }
 

@@ -2,7 +2,7 @@ use crate::dispatcher::event::Event;
 
 pub struct Model<'a> {
     pub current_quant: usize,
-    pub queue: Vec<&'a Event>
+    pub queue: Vec<&'a Event<'a>>
 
 }
 

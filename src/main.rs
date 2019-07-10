@@ -4,6 +4,7 @@ extern crate num_bigint;
 mod helper;
 mod dispatcher;
 mod model;
+mod qupla;
 
 use crate::helper::tritvector::TritVector;
 use crate::helper::tritconverter::TritConverter;

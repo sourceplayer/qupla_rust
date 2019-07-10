@@ -1,3 +1,4 @@
+pub mod supervisor;
 pub mod event;
 pub mod environment;
 pub mod effect;
